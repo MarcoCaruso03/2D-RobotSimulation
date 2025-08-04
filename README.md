@@ -51,7 +51,7 @@ A C++ project simulating a robot navigating a grid-based map using Dijkstra's al
 ├── src/ # Source files (.cpp)
 ├── include/ # Header files (.h)
 ├── README.md # This file
-└── Doxyfile # Documentation settings
+└── documentation/html
 ```
 
 ## 🌿 Branches Overview
