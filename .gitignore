@@ -1,6 +1,5 @@
 build/
 *.md5
-*.html
 *.aux
 *.log
 *.pdf
