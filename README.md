@@ -63,7 +63,8 @@ A C++ project simulating a robot navigating a grid-based map using Dijkstra's al
 
 ## 📑 Documentation
 
-Open `build/html/index.html` in your browser to view the full documentation.
+The generated documentation is available in the `docs/html/` folder. 
+You can browse it by opening `docs/html/index.html` locally after cloning the repo.
 
 ## 🛠️ Build Instructions
 
