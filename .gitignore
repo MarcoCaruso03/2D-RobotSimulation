@@ -1,0 +1,9 @@
+build/
+*.md5
+*.html
+*.aux
+*.log
+*.pdf
+*.dvi
+*.out
+*.synctex.gz

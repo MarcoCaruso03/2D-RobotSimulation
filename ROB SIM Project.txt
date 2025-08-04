@@ -1,0 +1,118 @@
+PROJECT ROB SIM
+Project phases: 
+0) Map creation: could be an empty map: just a grid and the robot or a map filled by obstacles, depends on the current phase of the project
+
+1) No obstacles => Given a starting point  A and an ending point B the robot must find the shortest path from A to B. 
+The output will be the shortest path and the graphic animation of the robot going from A to B 
+
+2) With obstacles and knowledge => Given a starting point A, and ending point B and given also the structure of the map: so the robot knows where are the obstacles, how much they are large etc, the robot must find the shortest path from A to B. 
+The output will be the shortest path and the graphic animation of the robot going from A to B, of course avoiding the obstacles, which are now presented in the graphic map
+
+3) With obstacles without knowledge, hand-written rules => Given a starting point A and ending point B, the robot without knowing the position of the obstacles must find the shortest path from A to B, avoiding the obstacles. The robot uses a series of sensors (virtual one) in order to capture is there are any obstacles. Than it uses some hand-written rules to avoid them and keep going on towards B. 
+The output will be the shortest path and the graphic animation of the robot going from A to B, of course avoiding the obstacles, which are now presented in the graphic map
+
+4) With obstacles without knowledge, ML decision =>  Given a starting point A and ending point B, the robot without knowing the position of the obstacles must find the shortest path from A to B, avoiding the obstacles. The robot uses a series of sensors (virtual one) in order to capture is there are any obstacles. Than it uses a ML model (maybe using reinforcement learning) to take a decision in order to avoid the obstacle and keep going on towards B. 
+The output will be the shortest path and the graphic animation of the robot going from A to B, of course avoiding the obstacles, which are now presented in the graphic map
+
+
+*************PHASE 0*************
+I want to create a graphic map (and also its structure (graph maybe) to use after from algorithm like A*) 
+A map is a grid where each grid has a size
+
+A map is made by Tiles, so in the Map.h I've a vector of Tile (tiles), std::vector<Tile> tiles; which in the construct is made by Tile (rect) in the correct position in order to get a grid)
+
+Than we also need a graph representation of the map so in the Map class we have         std::vector<std::vector<std::pair<int,float>>> which represent the weighted graph. It is built in this way: we know the total number of element (rows*cols), so we see the map as a matrix, so double for and we assign the element of graph the nodeID=r*cols +c; Than we check if the current element of the graph (tile) is an obstacle if yes we skip. Than we check what is the position of the current element (r>0, r<rows-1, c>0, c<cols-1), check if the neighbor is an obstacle if not, we add that the node and the edge, weighted 1.0f. 
+
+The Tile class instead is essentialy a RectangleShape with a type (TileType) and a Size). 
+
+
+*************PHASE 1/2************* => Implementation of Dijkstra 
+Per applicare Dijkstra => per ogni nodo devo tener traccia di: 
+	1. Distanza minima trovata finora dal nodo di partenza a quel nodo
+	2. Il nodo precedente da cui siamo arrivati per raggiungere quel nodo col percorso più breve. 
+	
+Quindi usiamo: 
+	1. Un vettore "distance" dove distance[i] sarà la distanza più breve da start a i. All'inizio non sappiamo nulla quindi saranno tutte distanze infinite. 
+	2. Un vettore "previous" dove previous[i] sarà il nodo che precede i nel percorso più breve trvoato finora. All'inizio nessuna ha un precedente quindi saranno tutti -1
+	
+Dato il vettore "distance" dobbiamo capire quale nodo visitare dopo. Si utilizza una coda di priorità (più efficiente di un vettore normale). La coda ci permette di inserire i nodi con la loro distanza e di estrarre sempre il nodo con la distanza minima in O(log n). Quindi inseriamo {0, nodo_partenza} nella coda. Finchè la coda non è vuota: prendiamo il nodo con distanza più bassa, visitamo i suoi vicini, se troviamo un percorso più corto, aggiorniamo la distanza e inseriamo il vicino nella coda. 
+
+    std::priority_queue<std::pair<float, int>,
+                    std::vector<std::pair<float, int>>,
+                    std::greater<std::pair<float, int>>>
+                    
+=>std::pair<float, int>, is the distance and the node
+=>  std::vector<std::pair<float, int>>, è il contentiore interno usato dalla coda. Di default è vector. 
+=> std::greater<std::pair<float, int>>>, di defualt è max-heap. Ma a noi serve il minimo, mettendo quel comparatore (greater) diventa un minheap
+
+Quindi ora l'algoritmo: 
+Finchè la coda non è vuota: 
+	Estrai il nodo con distanza minore 
+	Controlla tutti i suoi vicini 
+	Se trovi un percorso più breve verso un vicino, aggiorna la distanza e inserisci di nuovo nella coda.
+	
+	
+Devo ricostruire il percorso: Per esempio, se previous[7] = 3, vuol dire che per arrivare al nodo 7, nel percorso minimo, passi prima dal nodo 3.
+    std::vector<int> path; 
+    for(int at = goal; at!=-1; at = previous[at]){
+        path.push_back(at);
+    }
+    std::reverse(path.begin(), path.end());
+Quindi: partiamo dal goal. Finchè at non -1 (cioè non siamo arrivati all'inizio del percorso) Aggiungiamo at al percorso. Poi aggiorniamo at a previous[at] cioè al nodo precedente. Alla fine il percorso è al contrario (da goal a start), quindi invertiamo l’ordine con std::reverse
+
+
+
+Ottenuto il percorso devo capire il base a quello come far muove il robot 
+	-> Funzione che dato una tile, mi dice rispetto alla posizione attuale del robot dove si trova quella tile (sx, dx, up, down) 
+	-> In base a quello che mi dice quella funzione eseguo il comando di movimento 
+	-> Itero per tutte le tile del path che mi ha dato Dijktra
+	
+	
+FINISHED PHASE 1/2: SUMMARY: 
+Main: 
+	->Create a map by Map constructor, which will populate the tiles vector: a vector of Tile (rectangles with a type), positioning them in the right position in order to cover all the screen. 
+	-> Init of the robot by its constructor: the robot has a reference to the map and to the window. The default position is (0,0). Than I compute the initTile of the robot by     int robot_col = x / tileSize; int robot_row = y / tileSize;  currentTile = robot_row*map->getCols()+robot_col; 
+	-> I get the tiles which form the map => auto& tiles = map.getTiles();
+	->Init control boolean/int variables: 
+		*generateMap to control if the algorithm had been run
+		*clickStage to control the current stage of the program: =0 start, =1 goal, 2+= obstacles 
+		*canRunAlgo to control if we can run the algorithm (only it had been places a starting point and an end point)
+		
+	->Rendering cycle 
+		->Get the mouse and keyboard event: 
+			* Left mousebuttonpressed && clickStage==0 => place the starting point 
+			* Left mousebuttonpressed && clickStage==1 => place the goal point 
+			* Left mousebuttonpressed && clickStage==2 => place an obstacle 
+			* Right mousebottonpressed => delete an obstacle 
+			* E keyPressed and clickstage >= 1 => we can run the true algorithm  
+		->Run the algo (iff E keyPressed and clickstage >= 1)
+			* Generate the graph by map.buildGraph();
+			* Appy Dijkstra and so that get the path to follow:  std::vector<int> path = map.dijkstra(startTile, goalTile);
+			* I give to the robot the path to follow => robot.setPath(path); (so robot Knows the map, which its obstacles and already know the full path that it has to follow in order to arrive to the goalTile)
+			* I tell the robot that he can start its  own process => robot.setCanRunAlgo(true);
+		-> drawing/update phase: 
+			* map.draw(window) => It draws each tile in the vector tile.draw(window) (which is window.draw(shape))
+			* robot.update(window) => 
+				*check if the robot had been placed (check the variable robotPlaced, it is true when it is called the function Robot::placeRobot(int c, int r) (called when we place the startTile). 
+				*check if the algorithm can run (check the variable canRunAlgo, setted true when the user press E and it had placed at least the startTile and the goalTile 
+				* Than the robot has to move according the path given by Dijkstra, now stored in the variablepathToFollow. The current step made is stored in the variable "currentStep". 
+				If I haven't arrived to the end of the vector: I take the currentTile (and storing it in the nextTile variable); compute the corrisponding col and row and compute the target position. Than I take the current position, and compute the dx, and dy which are the difference in the x and y axes. Than compute the distance between the current position and the target position, in order to control if the robot had reached the tile. (if distance < 1.0f). If yes, I go to the next step. If not, so if I haven't reached the tile yet, I compute the direction toward the robot has to move and so give the comand to move (moveXpos etc...). 
+				Draw the figure.
+			* window.display()
+			
+
+
+****Introduction phase 3****
+The different with the phase 2 is that now the robot doesn't know how it's the map and where the obstacles are, so we cannot compute before of everything the path that the robot has to follow. 
+So we need Sensor in order to discover the place, and the robot has to build a map in run time while it's discovered new obstacles. 
+The sensor can be a function that given a direction check if the nextTile is an obstacle. 
+We also need to decide/understand how the robot should move????
+	-> (Idea to be checked): 
+		*The robot has a copy of the map, but now for him it's empty, NO obstacles. So the robot compute the dijkstra path on ITS map, so at the beginning there are no obstacles between him and the goal time. So dijkstra compute the path to follow. 
+	-> The robot starts it's process. But before to move towards the tile given by Dijkstra check with its sensor if in that direction there are an obstacle. If yes, it updates ITS map, adding the information that the next tile is an obstacle. So it doesn't move. Recompute Dijkstra on its map, which now has the information of the obstacle, and Dijkstra will give to the robot the new path. The dijkstra function is called as startTile=currentTile and goalTile=goalTile
+	-> Return to the previous phase. 
+	
+**Phase 3**
+-Introduction of Sensor: a sensor is an object which given a Direction check if in that direction there is an obstacle. If yes set a internal variable to true. 
+
+-Robot now has an "empty" map. For each step of the map each for obstacles. 
