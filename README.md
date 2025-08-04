@@ -66,6 +66,33 @@ A C++ project simulating a robot navigating a grid-based map using Dijkstra's al
 
 Open `build/html/index.html` in your browser to view the full documentation.
 
+## 🛠️ Build Instructions
+
+This project uses **CMake** for building.  
+Make sure you have installed:
+
+- A C++17 compatible compiler (e.g., g++ or clang++)
+- [SFML 2.6+](https://www.sfml-dev.org/)
+- CMake 3.10 or newer
+
+### 🔧 Build steps (Linux/macOS)
+
+```bash
+# Create a build directory
+mkdir -p build
+cd build
+```
+
+# Generate Makefiles with CMake
+cmake ..
+
+# Compile
+make
+
+# Run the executable 
+./Robot-tSim
+
+
 ## 📝 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
