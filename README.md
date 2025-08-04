@@ -45,15 +45,15 @@ A C++ project simulating a robot navigating a grid-based map using Dijkstra's al
 - **SFML 2.6+**
 - **Doxygen** (for documentation)
 
----
 
 ## 📂 Project Structure
-
+```plaintext
 ├── src/ # Source files (.cpp)
 ├── include/ # Header files (.h)
 ├── build/ # Doxygen config + generated docs
 ├── README.md # This file
 └── Doxyfile # Documentation settings
+```
 
 ## 🌿 Branches Overview
 
