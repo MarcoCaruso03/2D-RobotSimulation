@@ -1,6 +1,6 @@
 # 🤖 Robot Pathfinding Simulation
 
-![Robot Simulation](simulation.gif)
+![Robot Simulation](Simulation.gif)
 
 A C++ project simulating a robot navigating a grid-based map using Dijkstra's algorithm. Built with **SFML** for visualization, this project allows interactive placement of the start, goal, and obstacles, and shows how a robot can build and use a local map to navigate.
 
