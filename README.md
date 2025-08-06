@@ -56,12 +56,6 @@ A C++ project simulating a robot navigating a grid-based map using Dijkstra's al
 └── documentation/html
 ```
 
-## 🌿 Branches Overview
-
-- **phase-1-2**: The robot starts with full knowledge of the map, including obstacles. 
-- **phase-3**: The robot discovers the map incrementally using simulated sensors (up, down, left, right). 
-- **main**: The final branch, which is a copy of *phase-3*, representing the completed project with sensor-based mapping and navigation.
-
 
 ## 📑 Documentation
 
